@@ -60,14 +60,16 @@ alias diff="
 "
 alias jobs="jobs -l"
 alias terminfo="less ~/terminfo.txt"
-# Download with metadata, at 1080p, 
-# using nodejs and with a normal filename for yt-dlp
+# Download with metadata, at 1080p
+# with a normal filename for yt-dlp
 alias yt-dlp="
     'yt-dlp' \
         --output '%(title)s [%(uploader)s].%(ext)s' \
-        --embed-metadata \
+        --embed-metadata --embed-subs \
+        --embed-thumbnail --sub-langs en \
         --format-sort='width:1920,height:1080,fps:30' \
         --sponsorblock-remove sponsor,selfpromo,interaction \
+        --sleep-subtitles 1.1 \
         --sleep-requests 1.1 \
         --sleep-interval 0.2 \
         --max-sleep-interval 0.5 \
