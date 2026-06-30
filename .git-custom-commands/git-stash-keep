@@ -1,0 +1,10 @@
+#!/bin/bash
+
+[[ -z "$1" || "$1" =~ --help|-h ]] && {
+    echo "git stash-keep [--help|-h] <message>"
+    exit 1
+}
+git stash \
+    store "$(git stash create)" \
+    -m "$1"
+

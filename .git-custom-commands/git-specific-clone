@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Checks
+if [[ -z "$1" || "$1" =~ --help|-h ]] ;then
+    echo "git specific-clone [--help|-h] <url> <specific-things...>"
+    echo
+    echo "It'll create a cloned repository with just the selected files"
+    exit
+fi
+if [[ ! "$1" =~ ^(http:\/\/|https:\/\/).*$ ]] ;then
+    echo -e "\e[31mNot an acceptable url\e[0m"
+    exit 1
+fi
+
+URL="$1"
+folder="${1##*/}"
+shift
+thingsToCheckout=( "$@" )
+
+# Get the repo without creating the files
+# and try to get inside it
+git clone \
+    --no-checkout \
+    --filter="blob:none" \
+    "$URL"
+cd "$folder" || exit 1
+
+# Select files/folders to create
+for thing in "${thingsToCheckout[@]}" ;{
+    git sparse-checkout set "$thing"
+}
+
+# And then first try to checkout the main or master branches
+if ! git checkout main || git checkout master ;then
+    # if they're not the deafult ones
+    # check with git branch
+    branches=("${ git branch; }")
+    for branch in "${branches[@]}" ;{
+        ! [[ "$branch" =~ ^\* ]] && continue
+
+        git checkout "$branch"
+        break
+    }
+fi
+

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+gray="\e[90m"
+normal="\e[0m"
+
+[[ -z $1 || $1 =~ --help|-h || ! $1 =~ ^[0-9]+$ ]] && {
+    echo "Usage: git update-version [--help|-h] <amount_to_add>"
+    exit 1
+}
+
+echo -e "${gray}Updating package.json version...$normal"
+
+# Increases the minor version number by $1
+folderOfAwkScript=~/.git-custom-commands
+awk \
+    --include=inplace \
+    --assign="AMOUNT=$1" \
+    --file="$folderOfAwkScript/update-version.awk" \
+    "package.json"
+
+# Full version number
+version=$(pcre2grep -o1 '"version": "(.*)"' "package.json")
+git commit \
+    "package.json" \
+    -m "Update $version"
+git tag "$version"
+

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+gray="\e[90m"
+yellow="\e[33m"
+normal="\e[0m"
+
+echo -e "${gray}Trying to update package-lock.json...$normal"
+status="${ git status --porcelain; }"
+[[ -z $status ]] && {
+    echo "Clean working tree, quitting..."
+    exit
+}
+regex=" *M *package-lock.json"
+[[ ! $status =~ $regex ]] && {
+    echo -e "${yellow}package-lock.json hasn't been modified, quitting...$normal"
+    exit
+}
+git commit \
+    "package-lock.json" \
+    -m "Update package-lock.json"
+
