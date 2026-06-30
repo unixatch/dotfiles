@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# --------------------- Colors --
+    esc="\033["
+
+    Gray="${esc}30;90m"
+    Red="${esc}91m"
+    BOLD="${esc}1m"
+    NORMAL="${esc}0m"
+# ------------------------------------
+
+closeProcess() {
+    kill $CURRENT_SUB_PROCESS
+    echo
+}
+getPIDAndWait() {
+    CURRENT_SUB_PROCESS=$!
+    wait
+}
+# Skips part of the script instead of closing it
+trap closeProcess SIGINT
+
+termux-wake-lock
+clear
+printf "$BOLD$Red%s$NORMAL:\n\n" "npm"
+function upgradeProject {
+    printf '%b' "$Gray"
+    pushd "$1" || return 1
+        printf '%b' "$NORMAL"
+        npm upgrade
+        printf '%b' "$Gray\n"
+    popd || return 1
+    printf '%b' "$NORMAL"
+}
+
+# Node and javascript
+cd ~/js-scripts/ || exit 1
+upgradeProject project/ &
+getPIDAndWait
+
+# Python
+printf "\n$BOLD${Red}%s$NORMAL:\n\n" 'pip'
+{
+    mapfile pipFrozenList <<< "${ pip freeze; }"
+    # Actually checks for updates
+    pipFrozenList=("${pipFrozenList[@]//==/>=}")
+    # Remove symlinks
+    pipFrozenList=("${pipFrozenList[@]//*@*/}")
+    pip install \
+        --requirement /dev/stdin <<< "${pipFrozenList[@]}" \
+    | grep --invert-match "already satisfied" || {
+        printf "$Gray%s$NORMAL\n" 'Nothing to update'
+    }
+} &
+getPIDAndWait
+
+# normal packages
+printf "\n$BOLD${Red}%s$NORMAL:\n\n" 'pkg/apt-get'
+
+echo -e "${Gray}upgrade$NORMAL"
+pkg upgrade -y &
+getPIDAndWait
+
+printf "\n${Gray}%s$NORMAL\n" 'auto-clean && auto-remove'
+apt-get -y auto-clean && apt-get -y auto-remove &
+getPIDAndWait
+
+termux-wake-unlock
+termux-toast -b "black" "Finito di aggiornare Termux" &
+termux-vibrate -d 500 1>/dev/null &
+read -rsn 1
+
