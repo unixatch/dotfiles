@@ -1,0 +1,27 @@
+#!/bin/bash
+main() {
+    # --------------------- Colors --
+    local esc="\033["
+
+    local Green="${esc}32m"
+    local Light_Blue="${esc}36m"
+    local Gray="${esc}1;30m"
+    local BOLD="${esc}1m"
+    local NORMAL="${esc}0m"
+    # ------------------------------------
+
+    local msg1 msg2 url research_term
+    msg1=$(echo -e "${Light_Blue}Insert url: $NORMAL$Gray")
+    msg2=$(echo -e "$BOLD${Green}Insert search term: $NORMAL$Gray")
+
+    read -rp "$msg1" url
+    read -rp "$msg2" research_term
+    echo -e "$NORMAL"
+    curl -s "$url" | \
+        grep -i -B 2 \
+            --group-separator=$group_separator \
+            --color=always "$research_term"
+    read -rn 1
+}
+main
+

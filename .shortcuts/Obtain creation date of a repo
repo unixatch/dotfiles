@@ -1,0 +1,32 @@
+#!/bin/bash
+
+main() {
+    # --------------------- Colors --
+    local esc="\033["
+
+    local Green="${esc}32m"
+    local Red="${esc}91m"
+    local UNDERLINED_BOLD="${esc}1;4m"
+    local NORMAL="${esc}0m"
+    # ------------------------------------
+
+    cd "$HOME/.shortcuts" || exit
+    echo -e "↓ Insert Github repo like below ↓
+          
+        ${Green}author$NORMAL/${Red}repository$NORMAL"
+    echo
+    while read -rep ": " answer ;do
+        case "$answer" in
+            */*) printf '\e[2K'; break ;;
+            *) printf "Write something\e[F\e[2K" ;;
+        esac
+    done
+    echo
+    local fetchedData
+    fetchedData="${ node .repo_creation_date.js "$answer"; }"
+    printf "Creation date = $UNDERLINED_BOLD%s$NORMAL" \
+        "${fetchedData:-Black void}"
+        
+    read -rn 1
+}
+main
