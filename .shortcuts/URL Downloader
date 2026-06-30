@@ -1,0 +1,35 @@
+#!/bin/bash
+
+shopt -s expand_aliases
+cd ~/storage/downloads/ || exit 1
+# shellcheck source=../.bash_aliases
+source ~/.bash_aliases
+listOfUrls=()
+readParams=(
+    "-p" "URL: " "-e" "-n" "28"
+)
+readOrTimeout() {
+    read -r "${readParams[@]}" URL
+    [[ $? == 142 ]] && {
+        printf "\n\n"
+        return 142
+    }
+    return 0
+}
+while readOrTimeout ;do
+    [[ $URL =~ ^https://youtu.be ]] && {
+        listOfUrls+=("$URL")
+        readParams+=("-t" "1.5")
+        continue
+    }
+    printf "\e[F\e[2K"
+    [[ -z "$URL" ]] && break
+done
+
+yt-dlp "${listOfUrls[@]}"
+printf "\n\x1b[33;1;4m%s\x1b[0m" 'Download finished'
+termux-media-scan ~/storage/downloads/ &
+# -s → Disables any kind of echoing from stdin
+read -rsn 1
+wait
+
