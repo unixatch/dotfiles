@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Simple path corrector
+shopt -s cdspell
+# To be able to use **/
+shopt -s globstar
+# Keeps \n in history
+shopt -s cmdhist
+shopt -s lithist
+
