@@ -1,0 +1,150 @@
+
+set mouse true
+set shell bash
+
+# Panel sizes
+set ratios 2:3:4
+#set globsearch true
+set incsearch true
+
+set hidden true  # Hidden folders/files
+set drawbox true
+set icons true
+set period 2     # Reload files on screen
+set info size    # Shoe file sizes
+set dircounts    # Show folder sizes
+set promptfmt "\033[1;34m%w\033[0m/%f"
+
+map j up
+map k down
+
+map Im $mpv --vo=tct "$f"
+map L $ln -s "$f" "${f##*/}.lnk"
+map Ip ${{
+    # Obtain file names as an array
+    mapfile -t lines <<< "$fx"
+    linesOfFile=() # Temporary array
+    content=()     # Final array
+
+    for file in "${lines[@]}"; {
+        linesOfFile[0]=" ——— ${file##*/} ——— "$'\n\n'
+        mapfile -O 1 linesOfFile < "$file"
+        content+=("${linesOfFile[@]}")
+    }
+    pandoc -f gfm -t ansi <<< "${content[@]}" | less -R
+}}
+map D ${{
+    # Making sure everything is set up
+    mkdir -p ~/.trash
+    ! [[ -e ~/.trash_cleanup_time ]] && {
+        DAYS_TO_WAIT=4
+        days=$(( 60**2 * 24 * DAYS_TO_WAIT ))
+        nextDate=$(( EPOCHSECONDS + days ))
+
+        echo "$nextDate" > ~/.trash_cleanup_time
+    }
+
+    mapfile -t lines <<< "$fx"
+    (( ${#lines[@]} <= 0 )) && exit 1
+
+    # Ask before doing anything
+    saveCursor='\e7'
+    resetCursor='\e8'
+    openAlternateBuffer='\e[?1049h'
+    closeAlternateBuffer='\e[?1049l'
+    goTo1Line='\e[H'
+
+    printf '%b' "$saveCursor" \
+                "$openAlternateBuffer" \
+                "$goTo1Line"
+    printf '%s\n' "${lines[@]/#*\/}"
+    while read -p "Wanna trash ${#lines[@]} files/folders? [y|n] " -r confirmation ;do
+        case "$confirmation" in
+            y|Y|s|S) break ;;
+            n|N) exit 1 ;;
+            *) printf '%b' "$goTo1Line" "\e[0J" ;;
+        esac
+    done
+    tmpFile="$PREFIX/tmp/movedFiles"
+    printf "" > "$tmpFile"
+    for file in "${lines[@]}" ;{
+        {
+            mv "$file" "$HOME/.trash/" || {
+                mvExitCode=$?
+                echo 0 >> "$tmpFile"
+                exit $mvExitCode
+            }
+
+            # shellcheck disable=2059
+            [[ -e "$HOME/.trash/${file/#*\/}" ]] && echo 1 >> "$tmpFile"
+        } &
+    }
+    wait -f
+    mapfile -t filesMoved < "$tmpFile"
+    count=0
+    for i in "${filesMoved[@]}" ;{
+        (( i )) && (( count++ ))
+    }
+    filesMoved="$count"
+    printf "" > "$tmpFile"
+
+    # shows how many have been trashed
+    green="\e[32m"; normal="\e[0m"
+    greenTextFmt="$green%s$normal\n"
+    printf "$greenTextFmt" "trashed $filesMoved/${#lines[@]} files"
+    read -rn 1
+    printf '%b' "$closeAlternateBuffer" \
+                "$resetCursor"
+}}
+
+map <enter> ${{ ! [[ -d "$f" ]] && $EDITOR "$f" }}
+map sd ${{
+    mapfile -t lines <<< "$fx"
+
+    # Cleans up leading directories
+    for (( i = 0; i < ${#lines[@]}; i++ )) ;{
+        path="${lines[i]##*/}"
+        lines[i]="$path"
+    }
+    {
+        echo "-------- LIST OF FILES --------"
+        du --total --human-readable "${lines[@]}" | \
+            grep \
+                --color="always" \
+                --perl-regexp \
+                '^.*\t'
+        
+    } | $PAGER --quit-at-eof
+
+    # Old code
+}}
+map sf !ffprobe -hide_banner "$f"
+map E %{{
+    baseName="${f##*/}"
+    dirName="${baseName%.*}"
+    echo "Processing $f to $dirName..."
+    stdoutOf7z="${ 7z x -y "$f" -o"$dirName/"; }"
+    exitCodeOf7z=$?
+
+    mapfile -t stdoutOf7z <<< "$stdoutOf7z"
+    for line in "${stdoutOf7z[@]}"; do
+        if [[ "$line" == "Everything is Ok" ]] ;then
+            echo "$line"
+            exit
+        fi
+    done
+    exit $exitCodeOf7z
+}}
+map <a-l> $7z l "$f" | $PAGER
+map p : paste; clear
+map M $mkdir "$PWD/new-dir"
+map T $touch "$PWD/new-file"
+
+map i ${{
+    bat \
+        --chop-long-lines \
+        --pager "$PAGER" \
+        --map-syntax '*.conf:ini' \
+        "$f"
+}}
+
