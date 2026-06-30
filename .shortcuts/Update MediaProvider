@@ -1,0 +1,99 @@
+#!/bin/bash
+# --------------------- Colors ---
+   esc="\e["
+
+   Red="${esc}91m"
+   Green="${esc}32m"
+   Yellow="${esc}33m"
+   BOLD="${esc}1m"
+   NORMAL="${esc}0m"
+# --------------------------------
+listOfPaths=(
+    "$HOME/storage/downloads"
+    "$HOME/storage/music"
+)
+checkPath() {
+    local pathToCheck="$1"
+    [[ -e "$pathToCheck" ]] && return
+
+    printf "$Red$BOLD%s$NORMAL\n" \
+        "Nonexistent folder/file, try again"
+    read -rn 1
+    return 1
+}
+printList() {
+    printf '\e[H\e[0J'
+    local i number
+    for (( i = 0; i < ${#listOfPaths[@]}; i++ )) ;{
+        number=$(( i + 1 ))
+        printf "%$((COLUMNS - 4))s $Green%s$NORMAL\n" \
+            "${listOfPaths[i]}" \
+            "($number)"
+    }
+    echo
+}
+printMessage() {
+    printf '\e[H\e[0J'
+    local messageFmt=(
+        "$BOLD%s$NORMAL\n"
+        "\b %s"
+        "$Yellow%s$NORMAL:"
+        "$BOLD$Yellow"
+    )
+    # shellcheck disable=2059
+    printf "${messageFmt[*]}\n" "MANUAL MODE" "Insert" "path"
+}
+manual_loop() {
+    printMessage
+    read -rE -p "    " scanPath
+    [[ "$scanPath" =~ ^q|quit$ ]] && exit
+
+    checkPath "$scanPath" || { manual_loop; return; }
+    echo -e "$NORMAL"
+}
+
+# needed for $COLUMNS to show up
+(:)
+while true ;do
+    printList
+    read -rE -p "Choose a path or type manual: " path || continue
+    case "$path" in
+        1|2)
+            scanPath="${listOfPaths[path-1]}"
+            printf "\nChosen %s\n" "$path"
+            break
+        ;;
+        manual) manual_loop; break ;;
+
+        q|quit) exit ;;
+        "") printf "\nUsing ~/storage/music\n"; break ;;
+        *)  
+            printf "$Red$BOLD%s$NORMAL\n" "Nonexistent option"
+            read -rn 1
+            printList
+            continue
+        ;;
+    esac
+done
+#                      Default ↓
+scanPath="${scanPath:-$HOME/storage/music}"
+
+echo "Started scanning"
+printf "wait for it...\n\n"
+termux-media-scan -v "$scanPath"
+read -rn 1
+
+
+#   LEGACY
+#
+#   ↓ If adb's needed ↓
+#
+#   --method scan_volume:     Use scan method
+#   --uri content://media:    Use MediaProvider
+#   --arg external_primary:   Point to sdcard
+#
+#   adb shell content call \
+#       --method scan_volume \
+#       --uri content://media \
+#       --arg external_primary
+#

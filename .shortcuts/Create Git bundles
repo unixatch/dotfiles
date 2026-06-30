@@ -1,0 +1,23 @@
+#!/bin/bash
+
+backupsFolder="gitBundleBackups"
+cartelleGit=()
+cd "$HOME/projects" || exit
+
+echo -\|--------------------------------------------------------------\|-
+echo
+for project in "${cartelleGit[@]}" ;{
+
+    pushd "$project" 1>/dev/null || exit
+        git bundle create \
+            "../$backupsFolder/$project.bundle" --all
+        echo
+    popd 1>/dev/null || exit
+
+}
+echo -\|--------------------------------------------------------------\|-
+echo
+du -h $backupsFolder/* |
+    sed "s/\w*\///g" # Basename only
+[[ -n "$1" && "$1" == "--auto" ]] ||
+    read -rn 1
