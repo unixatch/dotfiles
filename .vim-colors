@@ -1,0 +1,117 @@
+" Javascript only
+highlight jsImport term=underline ctermfg=81 guifg=#00BAD8
+highlight link jsFrom jsImport
+highlight link jsExport jsImport
+highlight link jsModuleAs jsImport
+
+" General colors
+highlight Constant   guifg=#fb00fe
+highlight Comment    guifg=#00d9ff
+highlight Special    guifg=#ffc9be
+highlight PreProc    guifg=#10ffff
+highlight Folded     guifg=aqua    guibg=#4c4c4c
+highlight FoldColumn guibg=#656565
+highlight Tabline    guibg=#707070
+highlight Type       guifg=#97ff97
+highlight MatchParen guibg=#00cfcf guifg=#141414
+highlight CursorLine guibg=#1f1f1f
+
+" Some changes taken from catppuccin but
+" also keept desert's text
+highlight PMenuSel NONE
+\    gui=bold      cterm=bold    term=bold 
+\    guibg=#313244 guifg=#e6e6e6
+highlight PMenu NONE guibg=#181825 guifg=#9399b2
+highlight StatusLine 
+\    term=bold,reverse 
+\    cterm=bold ctermfg=189   ctermbg=16 
+\    gui=bold   guifg=#cdd6f4 guibg=#11111b
+highlight clear StatusLineNC
+highlight link StatusLineNC StatusLine 
+highlight StatusLineTerm guibg=seagreen
+highlight TabLine 
+\    term=bold,underline 
+\    ctermfg=59    ctermbg=16 
+\    guifg=#6c7086 guibg=#11111b
+highlight TabLineFill NONE ctermbg=232 guibg=#181825
+highlight LineNr      ctermfg=240      guifg=#4b4c69 " #555673 "#45475a
+highlight FoldColumn  NONE ctermfg=59  guifg=#6c7086
+
+highlight CursorLine   cterm=NONE guibg=#080808
+highlight CursorLineNr cterm=NONE guibg=#0b0b5f guifg=#cccccc "#c2c227
+
+" Different CursorLine so that it's easier
+" to see while going through files
+augroup netwrCursorLine
+    func! ChangeColors()
+        if &syntax == "netrw"
+            highlight CursorLine 
+            \    cterm=underline term=underline 
+            \    guibg=#1f1f1f
+        else
+            highlight CursorLine 
+            \    cterm=NONE term=NONE
+            \    guibg=#080808
+        endif
+    endfunc
+    au Syntax,WinEnter * call ChangeColors()
+augroup END
+
+" Disable show mode since we're building it on the status line
+set noshowmode
+"augroup StatusLine
+"    highlight PositionColorLine cterm=bold     guibg=seagreen guifg=#000000
+"    highlight link PromptModeLine PositionColorLine
+"    highlight NormalModeLine    guibg=#0b0b6f  guifg=white
+"    highlight InsertModeLine    cterm=bold     guibg=#E7B10E  guifg=black
+"    highlight VisualModeLine    cterm=bold     guifg=black    guibg=darkgray
+"    highlight link VisualBlockModeLine VisualModeLine
+"    highlight CommandLineModeLine cterm=bold guifg=black guibg=yellow
+"
+"    const g:lastText = " %#NONE#%#StatusLine# "
+"    func! GetModeName()
+"        if &buftype == "terminal" | return "" | endif
+"
+"        const mode = mode()
+"        let modeStringList = v:null
+"        if mode == "n"
+"            let modeStringList = ["%#NormalModeLine#", "NORMAL"]
+"        endif
+"        if mode == "i"
+"            let modeStringList = ["%#InsertModeLine#", "INSERT"]
+"        endif
+"        if mode ==# "v"
+"            let modeStringList = ["%#VisualModeLine#", "VISUAL"]
+"        endif
+"        if mode ==# "V"
+"            let modeStringList = ["%#VisualModeLine#", "VISUAL LINE"]
+"        endif
+"        if mode == "c"
+"            let modeStringList = ["%#CommandLineModeLine#", "COMMAND LINE"]
+"        endif
+"        if mode == "r"
+"            let modeStringList = ["%#PromptModeLine#", "PROMPT MODE"]
+"        endif
+"        if mode == ""
+"            let modeStringList = ["%#VisualModeLine#", "VISUAL BLOCK"]
+"        endif
+"        return modeStringList != v:null 
+"            \? $"{modeStringList[0]} {&paste ? "PASTE " : ""}{modeStringList[1]}{g:lastText}" 
+"            \: ""
+"    endfunc
+"    func! ShowPositionLine()
+"        if &buftype != "terminal"
+"            return "%#PositionColorLine# Line: %l  Column: %c "
+"        endif
+"        return ""
+"    endfunc
+"
+"    " mode status
+"    let statusLine="%{%GetModeName()%}"
+"    " file informations
+"    let statusLine.="%f%m%r %w "
+"    " %= is equal spaces
+"    " position
+"    let statusLine.="%=%{%ShowPositionLine()%}%#NONE#"
+"    set statusline=%{%statusLine%}
+"augroup END

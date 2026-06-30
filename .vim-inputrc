@@ -1,0 +1,215 @@
+" Keybinds added by me
+
+" Change paste behaviour
+noremap p P
+noremap P p
+
+" Swap j k
+noremap j k
+noremap k j
+
+" ^ and $ with g
+noremap g0 ^
+noremap g9 $
+
+" Move in completion with j and k keys directly
+inoremap <expr>   j  pumvisible() ? "\<C-p>" : "j"
+inoremap <expr>   k  pumvisible() ? "\<C-n>" : "k"
+" Use the completion but don't <cr>
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<cr>"
+
+" Search in range
+" vnoremap / /\%><C-r>=line(".")<cr>l\%<<C-r>=line("'>")+1<cr>l
+
+" Enable quick completion
+inoremap nm <C-n>
+" Enable quick language completion
+inoremap nj <C-x><C-o>
+
+" Quick dictionary completion
+let nkUsed = 0
+func UseNK()
+    let g:nkUsed = 1
+    set spell
+    call feedkeys("\<C-x>\<C-k>")
+    return ""
+endfunc
+augroup DisableSpellWhenNKWasUsed
+    autocmd!
+    func! MaybeDisableSpell()
+        if expand("%") =~ ".*/COMMIT_EDITMSG"
+            return
+        endif
+        if g:nkUsed
+           let g:nkUsed = 0
+           set nospell 
+        endif
+    endfunc
+    au InsertLeave * call MaybeDisableSpell()
+augroup END
+inoremap <expr> nk UseNK()
+" End of dictionary completion
+
+" Toggle spelling or paste mode
+noremap z! :set spell!<cr>
+noremap !p :set paste!<cr>
+
+" Better f/F
+func FindChar(direction)
+    let char = escape(
+    \   nr2char(getchar()),
+    \   "$^*\\\/!."
+    \)
+    let repeatCount = v:count1
+
+    let flag = a:direction ? "" : "b"
+    while repeatCount
+        call search(char, flag)
+        let repeatCount -= 1
+    endwhile
+endfunc
+nnoremap <silent> f :<C-u>call FindChar(1)<CR>
+nnoremap <silent> F :<C-u>call FindChar(0)<CR>
+
+" Shoertcut for disabling search highlighting
+noremap <silent> !n :nohlsearch<CR>
+
+" Faster esc
+inoremap ii <esc>
+inoremap i8 <C-o>
+
+function HighlightRange()
+    let startOfSel = line("'<")
+    let endOfSel = line("'>")
+    let listOfPos = 
+      \ getline(startOfSel, endOfSel)->map({
+      \    l -> startOfSel + l
+      \ })
+
+    call matchaddpos("SpellCap", listOfPos)
+endfunc
+vnoremap <leader>h :call HighlightRange()<cr>
+" clear all the highlighted lines
+nnoremap <leader>c :call clearmatches()<CR>
+
+" toggle folding
+noremap - za
+noremap <C-_> zA
+
+" Fix pageup and pagedown after swap
+noremap <pageup> <pagedown>
+noremap <pagedown> <pageup>
+inoremap <pageup> <pagedown>
+inoremap <pagedown> <pageup>
+
+" Move lines of text
+" (`z/`y means go to the saved position using the saved letter)
+" ('< = start of selection, '> = end of selection)
+func MoveLinesNormal(direction)
+    let repeatCount = v:count1
+    let subCommand = a:direction ? "move+" : "move-2"
+    let command = "mz:".subCommand."\<cr>`z"
+
+    " nmap <C-j> mz:move-2<cr>`z
+    " nmap <C-k> mz:move+<cr>`z
+    while repeatCount
+        execute "normal! ".command
+        let repeatCount -= 1
+    endwhile
+endfunc
+nmap <silent> <C-j> :<c-u>call MoveLinesNormal(0)<cr>
+nmap <silent> <C-k> :<c-u>call MoveLinesNormal(1)<cr>
+imap <silent> <C-j> <c-o>mz<c-o>:move-2<cr><c-o>`z
+imap <silent> <C-k> <c-o>mz<c-o>:move+<cr><c-o>`z
+vmap <silent> <C-j> :move'<-2<cr>`>my`<mzgv`yo`z
+vmap <silent> <C-k> :move'>+<cr>`<my`>mzgv`yo`z
+
+" Clone lines below or above selection
+nmap <silent> <C-i> mz:copy-1<cr>`z
+nmap <silent> <C-l> mz:copy+-1<cr>`z
+imap <silent> <C-up> <c-o>mz<c-o>:copy-1<cr><c-o>`z
+imap <silent> <C-down> <c-o>mz<c-o>:copy+-1<cr><c-o>`z
+vmap <silent> <C-i> :copy'<-1<cr>`>my`<mzgv`yo`z
+vmap <silent> <C-l> :copy'>+-1<cr>`<my`>mzgv`yo`z
+
+" ALE shortcuts
+noremap <leader><space> :ALEGoToImplementation<cr>
+noremap <leader><leader> :ALEFindReferences<cr>
+
+function! GetAndInsertRegister()
+    let l:userInput = input("-> ")
+    let l:commandForInserting = "normal! \"".l:userInput."P"
+
+    execute(l:commandForInserting)
+endfunc
+
+" Shows registers before pasting
+vnoremap <C-p> <del>:reg <bar> call GetAndInsertRegister()<CR>
+nnoremap <C-p> :reg <bar> call GetAndInsertRegister()<CR>
+
+" Very magic
+nnoremap / /\v\c
+cnoremap %s %s/\v\c//gc<left><left><left><left>
+cnoremap ,s ,s/\v\c//gc<home>
+" Custom squash message based on git merge --squash
+cnoremap .s %s/\v\ccommit ([a-z0-9]*)\nAuthor:.*\nDate:.*\n/• \1:/gc
+
+" Replace within block scope
+" nnoremap gr :ALERename<cr>
+
+" For global replace
+nnoremap gr #:%s/\c<C-R>///gc<left><left><left>
+
+" For replacing within a range
+nnoremap gR #:,s/\c<C-R>///gc<home>
+
+" Fix terminal mode keys (HOME,END,PGUP,PGDOWN)
+tmap <Esc>[5 <Esc>[5
+tmap <Esc>[6 <Esc>[6
+tmap <Esc>OH <Esc>OH
+tmap <Esc>OF <Esc>OF
+
+" Enable/disable line numbers
+noremap <c-n> :set number!<CR>
+
+" Tab move next
+noremap tm :tabnext<CR>
+
+" Tab move back
+noremap tp :tabprevious<CR>
+
+" Tab split
+noremap tt :tab split <bar> tabprevious <bar> quit <bar> tabnext<CR>
+
+" New tab terminal
+noremap tn :tab terminal<cr>
+
+" Tab move back in terminal mode
+" And tab move forward in terminal mode
+tnoremap <C-p> <c-x>:tabprevious<CR>
+tnoremap <C-n> <c-x>:tabnext<CR>
+
+" Paste from vim' clipboard into the terminal window
+tnoremap <leader>p <c-x>"
+
+" Enable normal mode for terminal
+tnoremap <c-b> <c-\><c-n><c-x>:set nonumber<cr>
+
+" Makes scrolling up in a vim terminal more normal
+" when using man or less
+tnoremap <ScrollWheelUp> <up>
+tnoremap <ScrollWheelDown> <down>
+
+" Explore on E
+noremap E :tabnew <bar> Explore<cr>
+
+" Quit with Ctrl+d
+noremap <c-d> :quit<cr>
+
+" ————————— PLUGINS —————————
+noremap gi :GitGutterLineHighlightsToggle<CR>
+noremap Gi :GitGutterFold<CR>
+imap <tab> <Plug>snipMateNextOrTrigger
+smap <tab> <Plug>snipMateNextOrTrigger
+nnoremap !u :UndotreeToggle<cr>
+
