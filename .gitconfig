@@ -1,0 +1,82 @@
+[advice]
+    detachedHead = true
+[init]
+    defaultBranch = main
+[user]
+    name = unixatch
+[core]
+    whitespace = "fix"
+    pager = "delta"
+    editor = "vim"
+
+[interactive]
+    diffFilter = delta --color-only
+[delta]
+    navigate = true
+    true-color = always
+    file-modified-label = "modified:"
+    pager = "less -+X --incsearch -M -i --use-color"
+
+[grep]
+    context = 3
+    extendedRegexp = true
+[log]
+    date = "format:%d/%m/%Y %H:%M:%S %z"
+[diff]
+    colorMoved = true
+    context = 10
+    colorMovedWS = "ignore-all-space"
+[color "diff"]
+    oldMoved = magenta
+    oldMovedAlternative = magenta dim
+    newMoved = blue
+    newMovedDimmed = blue dim
+    newMovedAlternative = bold blue
+    newMovedDimmedAlternative = bold blue dim
+
+[merge]
+    conflictstyle = diff3
+[mergetool]
+    prompt = true
+
+[alias]
+    shoe = show
+    ap = add --patch --unified=2 --inter-hunk-context=2
+    ae = add --edit
+    rp = restore --patch --unified=2 --inter-hunk-context=2
+    rps = restore --patch --staged --unified=2 --inter-hunk-context=2
+    l = log --stat --show-signature
+
+    # logging/status commands
+    ls = log --oneline --graph
+    s = status --show-stash
+    sl = stash list
+
+    # script for applying a stash interactivly
+    sa = stash-apply-patch
+
+    sd = stash show --patch
+    sp = stash push --patch
+    spop = stash pop
+
+    # diff commands
+    d = diff --minimal
+    ds = diff --stat
+    dc = d --cached
+    dcs = diff --staged --stat
+
+    rb = rebase --interactive
+    c = config --global --edit
+    cl = config --global --list
+    logFsck = !git l $(\
+        git fsck \
+        | awk '/dangling \\w+/ {print $NF}' \
+    )
+
+[pull]
+    ff = only
+[credential]
+    credentialStore = gpg
+[commit]
+    gpgsign = true
+

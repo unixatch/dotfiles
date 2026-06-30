@@ -1,0 +1,53 @@
+$include /etc/inputrc
+ 
+# --- VARIABLES ---
+ 
+#set show-all-if-ambiguous on
+set show-all-if-unmodified on
+ 
+# Case insensitive for completion
+set completion-ignore-case on
+ 
+# Color for completion
+set colored-stats on
+ 
+# Add characters at the end
+# of filenames based on types
+set visible-stats on
+ 
+# Show different colors
+# based on what's typed
+# inside the filename
+set colored-completion-prefix on
+ 
+ 
+# --- KEYBINDINGS ---
+ 
+# Auto-complete without showing a list
+TAB: menu-complete
+
+# Map normal completion to Ctrl-f
+Control-f: complete
+
+# Go through bash's history by looking
+# at the starting point of each string
+"\e[5": history-search-backward
+"\e[6": history-search-forward
+
+$if mode=vi
+    set keymap vi-insert
+        "ii": vi-movement-mode
+    set keymap vi
+        "diw": "bde"
+        "ciw": "bdei"
+    set keymap vi-insert
+        "\C-w": unix-word-rubout
+        "\C-k": kill-line
+    set keymap vi
+$endif
+
+$if mode=emacs
+    # Also possible with Ctrl+x Ctrl+e
+    "\ee": edit-and-execute-command
+$endif
+
