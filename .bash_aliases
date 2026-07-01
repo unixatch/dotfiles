@@ -66,7 +66,7 @@ alias yt-dlp="
     'yt-dlp' \
         --output '%(title)s [%(uploader)s].%(ext)s' \
         --embed-metadata --embed-subs \
-        --embed-thumbnail --sub-langs en \
+        --embed-subs --write-automatic-subs --sub-langs en \
         --format-sort='width:1920,height:1080,fps:30' \
         --sponsorblock-remove sponsor,selfpromo,interaction \
         --sleep-subtitles 1.1 \
