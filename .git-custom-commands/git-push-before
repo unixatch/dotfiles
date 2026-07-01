@@ -1,0 +1,22 @@
+#!/bin/bash
+
+branch=$1
+backAmount=$2
+
+[[ -z "$1" || "$1" =~ --help|-h ]] && {
+    echo "git push-before [--help|-h] <branch> <back_amount_of_commits>"
+    echo "  alias of git push origin <branch>~<n>:<branch>"
+    exit 1
+}
+[[ -z "$backAmount" ]] && {
+    echo "Missing integer, quitting..."
+    exit 1
+}
+# isInteger
+test "$backAmount" -eq "$backAmount" 2>/dev/null || {
+    echo "Not an integer"
+    exit 2
+}
+
+git push origin "$branch~$backAmount:$branch"
+
