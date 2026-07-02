@@ -8,6 +8,10 @@ backAmount=$2
     echo "  alias of git push origin <branch>~<n>:<branch>"
     exit 1
 }
+[[ -z "$branch" ]] && {
+    echo "Missing branch, quitting..."
+    exit 1
+}
 [[ -z "$backAmount" ]] && {
     echo "Missing integer, quitting..."
     exit 1
