@@ -83,9 +83,9 @@ PS2="| "
 set -o vi
 bind -f ~/.inputrc
 # Use full clear, not partial
-bind -x '"\C-l":"clear"'
+bind -m vi-insert -x '"\C-l":"clear"'
 # Like before, but also show folder's content
-bind -x '"\el":"clear; ls"'
+bind -m vi-insert -x '"\el":"clear; ls"'
 
 export usr_bin="$PREFIX/bin/"
 export EDITOR="vim"
