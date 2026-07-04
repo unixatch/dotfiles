@@ -35,10 +35,20 @@ highlight TabLine
 \    guifg=#6c7086 guibg=#11111b
 highlight TabLineFill NONE ctermbg=232 guibg=#181825
 highlight LineNr      ctermfg=240      guifg=#4b4c69 " #555673 "#45475a
+highlight SignColumn NONE
+highlight link SignColumn LineNr
 highlight FoldColumn  NONE ctermfg=59  guifg=#6c7086
 
 highlight CursorLine   cterm=NONE guibg=#080808
 highlight CursorLineNr cterm=NONE guibg=#0b0b5f guifg=#cccccc "#c2c227
+
+" ————————— PLUGINS —————————
+
+" GitGutter
+highlight GitGutterAdd ctermbg=242 guifg=#bbbbbb guibg=#002920
+highlight GitGutterChange guifg=#bbbbbb guibg=#111122
+highlight GitGutterDelete guifg=#bbbbbb guibg=#290000
+"highlight GitGutterChangeDeleteLineNr */
 
 " Different CursorLine so that it's easier
 " to see while going through files
