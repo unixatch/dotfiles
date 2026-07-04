@@ -50,7 +50,10 @@ augroup showChanges_Alongside_GitCommitMessage
         \      git show; ".unsetAndExit."
         \   } \<cr>
         \")
-        call feedkeys("\<C-x>:tabprevious | 1\<cr>i")
+        call feedkeys("\<C-x>:tabprevious | 1\<cr>")
+        " Needed because feedkeys is async
+        au BufEnter */COMMIT_EDITMSG
+            \call feedkeys(getline(1) == "" ? "i" : "")
     endfunc
     au VimEnter */COMMIT_EDITMSG call AddTerminal()
 augroup END
@@ -466,6 +469,7 @@ function! VisualSelection(direction, extra_filter) range
 endfunc
 
 " ALE
+let g:ale_set_signs = v:false
 let g:ale_virtualtext_cursor = 0
 " tsserver is default for js
 let g:ale_linters = {
@@ -479,9 +483,8 @@ augroup javascript_folding
 augroup END
 
 " GitGutter
-set signcolumn=no
-" let g:gitgutter_enabled = 0
-" let g:gitgutter_highlight_lines = 1
+set signcolumn=number
+let g:gitgutter_highlight_linenrs = 1
 highlight GitGutterAddLine    ctermfg=7   ctermbg=22
 highlight GitGutterChangeLine ctermfg=163 ctermbg=18
 highlight GitGutterDeleteLine ctermfg=1
