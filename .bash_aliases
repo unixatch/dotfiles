@@ -65,7 +65,7 @@ alias terminfo="less ~/terminfo.txt"
 alias yt-dlp="
     'yt-dlp' \
         --output '%(title)s [%(uploader)s].%(ext)s' \
-        --embed-metadata --embed-subs \
+        --embed-metadata \
         --embed-subs --write-automatic-subs --sub-langs en \
         --format-sort='width:1920,height:1080,fps:30' \
         --sponsorblock-remove sponsor,selfpromo,interaction \
@@ -75,6 +75,7 @@ alias yt-dlp="
         --max-sleep-interval 0.5 \
         --concurrent-fragments 16 \
 "
+alias yt-dlp-no-subs="yt-dlp --no-embed-subs --no-write-automatic-subs"
 # Best audio format for yt-dlp
 alias yt-dlp-audio="
     yt-dlp \
