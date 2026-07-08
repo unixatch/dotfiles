@@ -1,5 +1,14 @@
 " Keybinds added by me
 
+func WritePrefix(text)
+    let format = substitute(&commentstring, " ", "", "g")
+    let prefixToUse = printf(format, " ".a:text->toupper())
+    call feedkeys("\b".prefixToUse." ")
+    return ""
+endfunc
+ab <expr> todo  WritePrefix("todo" )
+ab <expr> fixme WritePrefix("fixme")
+
 " Change paste behaviour
 noremap p P
 noremap P p
