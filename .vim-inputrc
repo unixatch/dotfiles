@@ -218,6 +218,11 @@ noremap <c-d> :quit<cr>
 " ————————— PLUGINS —————————
 noremap gi :GitGutterLineHighlightsToggle<CR>
 noremap Gi :GitGutterFold<CR>
+func ShowHunkList()
+    GitGutterQuickFixCurrentFile
+    tab copen
+endfunc
+noremap gq :call ShowHunkList()<CR>
 imap <tab> <Plug>snipMateNextOrTrigger
 smap <tab> <Plug>snipMateNextOrTrigger
 nnoremap !u :UndotreeToggle<cr>
