@@ -2,7 +2,7 @@
 
 func WritePrefix(text)
     let format = substitute(&commentstring, " ", "", "g")
-    let prefixToUse = printf(format, " ".a:text->toupper())
+    let prefixToUse = printf(format, " ".a:text->toupper().":")
     call feedkeys("\b".prefixToUse." ")
     return ""
 endfunc

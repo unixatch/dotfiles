@@ -506,6 +506,13 @@ au! User AirlineAfterInit
 " python-syntax
 let g:python_highlight_all = 1
 
+" Undotree
+let g:undotree_TreeNodeShape   = "↑"
+let g:undotree_TreeReturnShape = "╲"
+let g:undotree_TreeVertShape   = "│"
+let g:undotree_TreeSplitShape  = "╱"
+let g:undotree_SetFocusWhenToggle = 1
+let g:undotree_ShortIndicators = 1
 
 call plug#begin()
     Plug 'vim-airline/vim-airline'
