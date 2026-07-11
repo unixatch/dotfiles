@@ -41,7 +41,7 @@ export LESS_TERMCAP_mr=$'\e[7m'
 # Begin dim/half-bright mode
 export LESS_TERMCAP_mh=$'\e[2m'
 
-export PROMPT_DIRTRIM=6
+export PROMPT_DIRTRIM=3
 # shellcheck disable=2168
 ${
     local SOFT_TERMINAL_RESET='\[\033[\041p\]'
@@ -67,7 +67,7 @@ ${
         "$EXIT_CODE"
         "$RED\w$NORMAL/"
 
-        "\n$GREEN⌊⎽\$$NORMAL$DEFAULT_CURSOR_SHAPE "
+        "$GREEN\$$NORMAL$DEFAULT_CURSOR_SHAPE "
     )
     IFS=
     PS1="${terminalPrompt[*]}"
