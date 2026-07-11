@@ -2,6 +2,11 @@
 
 shopt -s expand_aliases
 cd ~/storage/downloads/ || exit 1
+saveCursor='\e7'
+resetCursor='\e8'
+openAlternateBuffer='\e[?1049h'
+closeAlternateBuffer='\e[?1049l'
+goTo1Line='\e[H'
 # shellcheck source=../.bash_aliases
 source ~/.bash_aliases
 listOfUrls=()
@@ -16,6 +21,10 @@ readOrTimeout() {
     }
     return 0
 }
+printf '%b' \
+    "$saveCursor" \
+    "$openAlternateBuffer" \
+    "$goTo1Line"
 while readOrTimeout ;do
     [[ $URL =~ ^https://youtu.be ]] && {
         listOfUrls+=("$URL")
@@ -35,4 +44,7 @@ termux-media-scan ~/storage/downloads/ &>/dev/null &
 # -s → Disables any kind of echoing from stdin
 read -rsn 1
 wait
+printf '%b' \
+    "$closeAlternateBuffer" \
+    "$resetCursor"
 
