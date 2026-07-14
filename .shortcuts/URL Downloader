@@ -21,14 +21,26 @@ readOrTimeout() {
     }
     return 0
 }
-printf '%b' \
-    "$saveCursor" \
-    "$openAlternateBuffer" \
-    "$goTo1Line"
+resetAll() {
+    [[ -n $PROMPT_DIRTRIM ]] && {
+        printf '%b' \
+            "$closeAlternateBuffer" \
+            "$resetCursor"
+    }
+    exit 130
+}
+trap resetAll SIGINT
+
+[[ -n $PROMPT_DIRTRIM ]] && {
+    printf '%b' \
+        "$saveCursor" \
+        "$openAlternateBuffer" \
+        "$goTo1Line"
+}
 while readOrTimeout ;do
     [[ $URL =~ ^https://youtu.be ]] && {
         listOfUrls+=("$URL")
-        readParams+=("-t" "1.5")
+        [[ -z ${readParams[5]} ]] && readParams+=("-t" "1.5")
         continue
     }
     printf "\e[F\e[2K"
@@ -44,7 +56,9 @@ termux-media-scan ~/storage/downloads/ &>/dev/null &
 # -s → Disables any kind of echoing from stdin
 read -rsn 1
 wait
-printf '%b' \
-    "$closeAlternateBuffer" \
-    "$resetCursor"
+[[ -n $PROMPT_DIRTRIM ]] && {
+    printf '%b' \
+        "$closeAlternateBuffer" \
+        "$resetCursor"
+} || true
 
