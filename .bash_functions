@@ -548,8 +548,15 @@ lv() {
     local videoFiles=(*.webm *.mp4 *.mkv)
     shopt -u nullglob
 
-    local i
-    for (( i = 0; i < ${#videoFiles[@]}; i++ )) ;{ : ;}
-    echo Video files: $i
+    echo Video files: ${#videoFiles[@]}
+}
+la() {
+    # Shows how many audio files there are 
+    # in the current folder
+    shopt -s nullglob
+    local audioFiles=(*.opus *.mp3 *.flac *.wav)
+    shopt -u nullglob
+
+    echo Audio files: ${#audioFiles[@]}
 }
 
