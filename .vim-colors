@@ -39,7 +39,7 @@ highlight SignColumn NONE
 highlight link SignColumn LineNr
 highlight FoldColumn  NONE ctermfg=59  guifg=#6c7086
 
-highlight CursorLine   cterm=NONE guibg=#080808
+highlight CursorLine   cterm=NONE guibg=#080812
 highlight CursorLineNr cterm=NONE guibg=#0b0b5f guifg=#cccccc "#c2c227
 
 " ————————— PLUGINS —————————
@@ -62,7 +62,7 @@ augroup netwrCursorLine
         else
             highlight CursorLine 
             \    cterm=NONE term=NONE
-            \    guibg=#080808
+            \    guibg=#080812
         endif
     endfunc
     au Syntax,WinEnter,BufWinEnter * call ChangeColors()
