@@ -1,29 +1,11 @@
 #!/usr/bin/env bash
 
-(:)
-curPos=0
-keepLooping="true"
-selection=()
-shopt -s nullglob
-files=(*.webm *.mkv *.mp4)
-shopt -u nullglob
-
-filenameLengths=()
-for file in "${files[@]}" ;do
-    totalLines=0
-    for (( i = 0; i < ${#file}; )) ;{
-        (( totalLines++ ))
-        i=$((i + LINES))
-    }
-    filenameLengths+=( "$totalLines" )
-    totalLines=0
-done
 
 sigwinchHandler() (:)
 trapHandler() { printf '\e[?1049l'; exit; }
 
 renderer() {
-    local loopPos=0 curTotLines=0 lines=()
+    local file loopPos=0 curTotLines=0 lines=()
     for file in "${files[@]}" ;do
         (( curTotLines+=filenameLengths[loopPos] ))
         (( curTotLines - curPos > LINES )) && break
@@ -46,13 +28,11 @@ renderer() {
         ((loopPos++))
     done
     IFS= lines="${lines[*]}"
-    printf '\e[3J\e[1J%b' "$lines"
+    printf '\e[H\e[0J%b' "$lines"
 }
 inputHandler() {
-    local needsToStop="false"
-    local upRegex="A|w|k"
-    local downRegex="B|s|j"
-    local arrowRegex="^\["
+    local input needsToStop="false"
+    local upRegex="A|w|k" downRegex="B|s|j" arrowRegex="^\["
     local wholeInput=""
 
     # TODO: Emacs bindings?
@@ -110,6 +90,25 @@ inputHandler() {
 main() {
     trap trapHandler SIGINT SIGTERM EXIT
     trap sigwinchHandler SIGWINCH
+
+    (:)
+    local curPos=0 keepLooping="true" selection=()
+    shopt -s nullglob
+    local files=(*.webm *.mkv *.mp4)
+    shopt -u nullglob
+
+    local filenameLengths=() totalLines=0 file i
+    for file in "${files[@]}" ;do
+        totalLines=0
+        for (( i = 0; i < ${#file}; )) ;{
+            (( totalLines++ ))
+            i=$((i + LINES))
+        }
+        filenameLengths+=(
+            $(( totalLines != 1 ? totalLines - 1 : 1 ))
+        )
+        totalLines=0
+    done
     # Opens alternate buffer + saves cursor
     printf '\e[?1049h'
         while "$keepLooping" ;do
@@ -118,8 +117,16 @@ main() {
     # Closes alternate buffer + restores cursor
     printf '\e[?1049l'
 
+    # Show selected files
+    local listOfSelectedFiles=() file n
+    for n in "${selection[@]}" ;{
+        echo "${files[n]}"
+        printf -v file '%q' "${files[n]}"
+        listOfSelectedFiles+=("$file")
+    }
+
     # Confirmation prompt
-    local doIt="false"
+    local doIt="false" answer
     while read -p "Use file [y|n]? " -r answer ;do
         case "$answer" in
             y|Y|s|S) doIt="true"; break ;;
@@ -129,12 +136,7 @@ main() {
     done
     if "$doIt" ;then
         # Uses the selected files
-        local listOfSelectedFiles=() file
-        for n in "${selection[@]}" ;{
-            printf -v file '%q' "${files[n]}"
-            listOfSelectedFiles+=("$file")
-        }
-        echo "${listOfSelectedFiles[@]}"
+        :
     fi
 }
 main
