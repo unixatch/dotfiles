@@ -87,7 +87,7 @@ inputHandler() {
     done
 }
 
-main() {
+file_selector() {
     trap trapHandler SIGINT SIGTERM EXIT
     trap sigwinchHandler SIGWINCH
 
@@ -136,8 +136,14 @@ main() {
     done
     if "$doIt" ;then
         # Uses the selected files
-        :
+        REPLY=( "${listOfSelectedFiles[@]}" )
     fi
 }
-main
+if ! ( return &>/dev/null ) ;then
+    # Interactive, run it
+    file_selector
+else
+    # Sourced, do nothing
+    :
+fi
 
