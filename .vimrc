@@ -109,7 +109,8 @@ set undodir=~/.vim/undo_history/
 
 augroup BashFiles
     autocmd!
-    au WinEnter,BufRead 
+    au VimEnter,WinEnter,BufRead 
+        \*.bash,
         \*/.bash_functions,
         \*/.bash_aliases,
         \*/.bashrc,

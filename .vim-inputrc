@@ -194,7 +194,7 @@ noremap tm :tabnext<CR>
 noremap tp :tabprevious<CR>
 
 " Tab split
-noremap tt :tab split <bar> tabprevious <bar> quit <bar> tabnext<CR>
+noremap tt :tabnew <bar> tabprevious <bar> quit <bar> tabnext <CR><C-^>
 
 " New tab terminal
 noremap tn :tab terminal<cr>
