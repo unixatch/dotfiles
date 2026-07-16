@@ -1,35 +1,52 @@
 #!/usr/bin/env bash
 
+(:)
 curPos=0
 keepLooping="true"
 selection=()
-
 shopt -s nullglob
-files=(*.webm *.mkv)
+files=(*.webm *.mkv *.mp4)
 shopt -u nullglob
 
-trapHandler() { printf '\e[?1049l'; exit 130; }
+filenameLengths=()
+for file in "${files[@]}" ;do
+    totalLines=0
+    for (( i = 0; i < ${#file}; )) ;{
+        (( totalLines++ ))
+        i=$((i + LINES))
+    }
+    filenameLengths+=( "$totalLines" )
+    totalLines=0
+done
+
+sigwinchHandler() (:)
+trapHandler() { printf '\e[?1049l'; exit; }
 
 renderer() {
-    local loopPos=0
+    local loopPos=0 curTotLines=0 lines=()
     for file in "${files[@]}" ;do
+        (( curTotLines+=filenameLengths[loopPos] ))
+        (( curTotLines - curPos > LINES )) && break
+
         # Selection highlighter
         [[ -n ${selection[loopPos]} ]] &&
         (( selection[loopPos] == loopPos )) && {
-            printf '\e[41m%s\e[0m\n' "$file"
+            lines+=( $'\e[41m'"$file"$'\e[0m\n' )
             ((loopPos++))
             continue
         }
         # Cursor highlighter
         (( curPos == loopPos )) && {
-            printf '\e[7m%s\e[0m\n' "$file"
+            lines+=( $'\e[7m'"$file"$'\e[0m\n' )
             ((loopPos++))
             continue
         }
         # Normal printing
-        echo "$file"
+        lines+=("$file\n")
         ((loopPos++))
     done
+    IFS= lines="${lines[*]}"
+    printf '\e[3J\e[1J%b' "$lines"
 }
 inputHandler() {
     local needsToStop="false"
@@ -38,15 +55,18 @@ inputHandler() {
     local arrowRegex="^\["
     local wholeInput=""
 
+    # TODO: Emacs bindings?
+    # TODO: vim shortcuts like 3k?
     while read -rsN 1 input ;do
         case "$input" in
-            # Start of a sequence
-            $'\e'|"[") ;;
             # Up and down arrows
             A|B|w|s|j|k)
                 # Broken up/down arrow escape sequences
                 [[ $input =~ A|B ]] &&
-                [[ ! $wholeInput =~ $arrowRegex ]] && continue
+                [[ ! $wholeInput =~ $arrowRegex ]] && {
+                    wholeInput=""
+                    continue
+                }
 
                 [[ $input =~ $upRegex ]] && ((
                     curPos > 0
@@ -60,8 +80,6 @@ inputHandler() {
                 ))
                 needsToStop="true"
             ;;
-            # Left and right arrows are ignored
-            C|D|a|d) needsToStop="true" ;;
             # Selector
             " ")
                 if [[ -n ${selection[$curPos]} ]] ;then
@@ -80,7 +98,7 @@ inputHandler() {
                 needsToStop="true"
             ;;
             # Quit command
-            q|Q|e|E) printf '\e[?1049l'; exit 0 ;;
+            q|Q|e|E) exit 0 ;;
             # Ignore everything else
             *) ;;
         esac
@@ -90,12 +108,12 @@ inputHandler() {
 }
 
 main() {
-    trap trapHandler SIGINT SIGTERM
+    trap trapHandler SIGINT SIGTERM EXIT
+    trap sigwinchHandler SIGWINCH
     # Opens alternate buffer + saves cursor
     printf '\e[?1049h'
         while "$keepLooping" ;do
             renderer; inputHandler
-            printf '\e[2J' # Clears the whole screen
         done
     # Closes alternate buffer + restores cursor
     printf '\e[?1049l'
