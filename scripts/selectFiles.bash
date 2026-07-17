@@ -2,7 +2,15 @@
 
 
 sigwinchHandler() (:)
-trapHandler() { printf '\e[?1049l'; exit; }
+exitTrapHandler() { printf '\e[?1049l'; return "$BASH_TRAPSIG"; }
+trapHandler() {
+    printf '\e[?1049l'
+    # Needed because read -s can break
+    # the echoing of input characters
+    # (see "stty echo")
+    trap $BASH_TRAPSIG
+    kill -$BASH_TRAPSIG $BASHPID
+}
 
 renderer() {
     local file loopPos=0 curTotLines=0 lines=()
@@ -87,8 +95,9 @@ inputHandler() {
     done
 }
 
-file_selector() {
-    trap trapHandler SIGINT SIGTERM EXIT
+file_selector() (
+    trap trapHandler SIGINT SIGTERM
+    trap exitTrapHandler EXIT
     trap sigwinchHandler SIGWINCH
 
     (:)
@@ -138,7 +147,7 @@ file_selector() {
         # Uses the selected files
         REPLY=( "${listOfSelectedFiles[@]}" )
     fi
-}
+)
 if ! ( return &>/dev/null ) ;then
     # Interactive, run it
     file_selector
