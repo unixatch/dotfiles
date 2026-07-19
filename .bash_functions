@@ -542,7 +542,7 @@ unameAll() {
     }
 }
 lv() {
-    # Shows how many video there are 
+    # Shows how many video there are
     # in the current folder
     shopt -s nullglob
     local videoFiles=(*.webm *.mp4 *.mkv)
@@ -551,12 +551,49 @@ lv() {
     echo Video files: ${#videoFiles[@]}
 }
 la() {
-    # Shows how many audio files there are 
+    # Shows how many audio files there are
     # in the current folder
     shopt -s nullglob
     local audioFiles=(*.opus *.mp3 *.flac *.wav)
     shopt -u nullglob
 
     echo Audio files: ${#audioFiles[@]}
+}
+storageUsed() {
+    local dfOutput
+    # Filesystem       1K-blocks   Used Available Use% Mounted on
+    # /dev/block/dm-15    655792 655792         0 100% /
+    # ...
+    mapfile -t dfOutput < <(df -k)
+    dfOutput=(
+        "${dfOutput[0]}"
+        "${dfOutput[@]:${#dfOutput[@]}-1}" # last line
+    )
+    local header storage
+    mapfile -t -d '|' header  <<< "${dfOutput[0]//+( )/\|}"
+    mapfile -t -d '|' storage <<< "${dfOutput[1]//+( )/\|}"
+    header[1]="total"
+
+    # Precision to .2f, but as an integer
+    # so we need to build it later
+    local total     totPrecStart   \
+          used      usedPrecStart  \
+          available availPrecStart
+    total=$((     storage[1] * 10000 / 100 / 1024 ** 2 ))
+    used=$((      storage[2] * 10000 / 100 / 1024 ** 2 ))
+    available=$(( storage[3] * 10000 / 100 / 1024 ** 2 ))
+    totPrecStart=$((   ${#total}     - 2 ))
+    usedPrecStart=$((  ${#used}      - 2 ))
+    availPrecStart=$(( ${#available} - 2 ))
+
+    #   Used  Available ...
+    # 100.52       8.63 ...
+    printf '\e[32m%11s\e[0m' \
+        "${header[@]:1:${#header[@]}-2}" "${header[*]:${#header}-2}"$'\n'
+    printf '%11s' \
+        "${total:0:$totPrecStart}.${total:$totPrecStart} Gb" \
+        "${used:0:$usedPrecStart}.${used:$usedPrecStart} Gb" \
+        "${available:0:$availPrecStart}.${available:$availPrecStart} Gb" \
+        "${storage[4]}" "  ${storage[5]}"
 }
 
